@@ -1114,6 +1114,7 @@ static int rtl8187_add_interface(struct ieee80211_hw *dev,
 		goto exit;
 
 	switch (vif->type) {
+	case NL80211_IFTYPE_AP:
 	case NL80211_IFTYPE_STATION:
 	case NL80211_IFTYPE_ADHOC:
 		break;
@@ -1604,7 +1605,8 @@ static int rtl8187_probe(struct usb_interface *intf,
 			priv->rfkill_mask = RFKILL_MASK_8198;
 	}
 	dev->vif_data_size = sizeof(struct rtl8187_vif);
-	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION) |
+	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_AP) |
+				      BIT(NL80211_IFTYPE_STATION) |
 				      BIT(NL80211_IFTYPE_ADHOC) ;
 
 	wiphy_ext_feature_set(dev->wiphy, NL80211_EXT_FEATURE_CQM_RSSI_LIST);
