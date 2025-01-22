@@ -71,6 +71,7 @@
 #endif
 #include "backend/gpu/mali_kbase_pm_internal.h"
 #include "mali_kbase_dvfs_debugfs.h"
+#include "mali_kbase_pm.h"
 
 #include <linux/module.h>
 #include <linux/init.h>
@@ -814,6 +815,13 @@ static int kbase_api_set_flags(struct kbase_file *kfile,
 }
 
 #if !MALI_USE_CSF
+static int kbase_api_apc_request(struct kbase_file *kfile,
+		struct kbase_ioctl_apc_request *apc)
+{
+	kbase_pm_apc_request(kfile->kbdev, apc->dur_usec);
+	return 0;
+}
+
 static int kbase_api_job_submit(struct kbase_context *kctx,
 		struct kbase_ioctl_job_submit *submit)
 {
@@ -1698,6 +1706,13 @@ static long kbase_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_SET_FLAGS,
 				kbase_api_set_flags,
 				struct kbase_ioctl_set_flags,
+				kfile);
+		break;
+
+	case KBASE_IOCTL_APC_REQUEST:
+		KBASE_HANDLE_IOCTL_IN(KBASE_IOCTL_APC_REQUEST,
+				kbase_api_apc_request,
+				struct kbase_ioctl_apc_request,
 				kfile);
 		break;
 	}

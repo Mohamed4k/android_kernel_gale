@@ -114,6 +114,16 @@
 #define KBASE_LOCK_REGION_MAX_SIZE_LOG2 (48) /*  256 TB */
 
 /**
+ * Realtime priority level of mali_apc_thread.
+ */
+#define KBASE_APC_THREAD_RT_PRIO (60)
+
+/**
+ * Maximum allowed wake duration in usec for apc request.
+ */
+#define KBASE_APC_MAX_DUR_USEC (4000)
+
+/**
  * Minimum size in bytes of a MMU lock region, as a logarithm
  */
 #define KBASE_LOCK_REGION_MIN_SIZE_LOG2 (15) /* 32 kB */
@@ -927,6 +937,17 @@ struct kbase_process {
  * @l2_hash_override:       Used to set L2 cache hash via device tree blob
  * @l2_hash_values_override: true if @l2_hash_values is valid.
  * @l2_hash_values:         Used to set L2 asn_hash via device tree blob
+ * @job_done_worker:        Worker for job_done work.
+ * @job_done_worker_thread: Thread for job_done work.
+ * @event_worker:           Worker for event work.
+ * @event_worker_thread:    Thread for event work. 
+ * @apc.worker:             Worker for async power control work.
+ * @apc.thread:             Thread for async power control work.
+ * @apc.power_on_work:      Work struct for powering on the GPU.
+ * @apc.power_off_work:     Work struct for powering off the GPU.
+ * @apc.end_ts:             The latest end timestamp to power off the GPU.
+ * @apc.timer:              A hrtimer for powering off based on wake duration.
+ * @apc.lock:               Lock for @apc.end_ts and @apc.timer.
  * @process_root:           rb_tree root node for maintaining a rb_tree of
  *                          kbase_process based on key tgid(thread group ID).
  * @dma_buf_root:           rb_tree root node for maintaining a rb_tree of
@@ -1171,6 +1192,20 @@ struct kbase_device {
 	struct kbase_csf_device csf;
 #else
 	struct kbasep_js_device_data js_data;
+
+    struct kthread_worker job_done_worker;
+    struct task_struct *job_done_worker_thread;
+    struct kthread_worker event_worker;
+    struct task_struct *event_worker_thread;
+	struct {
+		struct kthread_worker worker;
+		struct task_struct *thread;
+		struct kthread_work power_on_work;
+		struct kthread_work power_off_work;
+		ktime_t end_ts;
+		struct hrtimer timer;
+		struct mutex lock;
+	} apc;
 
 	/* See KBASE_JS_*_PRIORITY_MODE for details. */
 	u32 js_ctx_scheduling_mode;
