@@ -563,6 +563,7 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 #endif
 	next_f = get_next_freq(sg_policy, util, max);
 
+	if (sugov_update_next_freq(sg_policy, time, next_f)) {
 		/* Restore cached freq as next_freq has changed */
 		sg_policy->cached_raw_freq = sg_policy->prev_cached_raw_freq;
 	}
@@ -574,7 +575,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 		trace_sched_util(cid, next_f, time);
 	}
 #else
-
 	/*
 	 * This code runs under rq->lock for the target CPU, so it won't run
 	 * concurrently on two different CPUs for the same target and it is not
@@ -589,7 +589,6 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 
 	__cpufreq_notifier_fp(cid, next_f);
 	raw_spin_unlock(&sg_policy->update_lock);
-
 }
 
 static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
