@@ -53,6 +53,8 @@ ccflags-y += -DMTK_GPUFREQ_V1
 #ccflags-y += -DGED_KPI_MET_DEBUG
 ccflags-y += -DMTK_GED_KPI
 ccflags-y += -DGED_KPI_CPU_BOOST
+ccflags-y += -DGED_SKI_SUPPORT
+ged-y += src/ged_ski.o
 $(info $$GED: CONFIG_MTK_PLATFORM is defined [${CONFIG_MTK_PLATFORM}])
 
 ifeq ($(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT),y)
